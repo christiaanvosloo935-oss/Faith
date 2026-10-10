@@ -1,9 +1,12 @@
 import { db, type CheckIn, type HelpTask, type Need, type Pin, type Sermon } from '../db';
 import { uid } from './ids';
 import { sendLink, shareUrl, type SharePacket } from './share';
+import { needCreated } from '../sync/engine';
 
 export async function createNeed(n: Omit<Need, 'id' | 'createdAt' | 'prayedBy' | 'resolved' | 'shareId'>) {
-  return db.needs.add({ ...n, createdAt: Date.now(), prayedBy: [], resolved: false, shareId: uid() });
+  const id = (await db.needs.add({ ...n, createdAt: Date.now(), prayedBy: [], resolved: false, shareId: uid() })) as number;
+  await needCreated(id);
+  return id;
 }
 
 export function newTask(kind: HelpTask['kind'], label: string, when?: string): HelpTask {

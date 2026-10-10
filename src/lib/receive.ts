@@ -1,5 +1,6 @@
 import { db, type CheckIn, type HelpTask, type Need, type Pin, type Sermon } from '../db';
 import { buildFollowUps } from './logic';
+import { needCreated } from '../sync/engine';
 import type { SharePacket } from './share';
 
 export type ReceivedNeed = Omit<Need, 'id' | 'circleId'> & { circleName: string };
@@ -23,6 +24,7 @@ export async function receiveNeed(data: ReceivedNeed, circleId?: number): Promis
       tasks: mergeTasks(existing.tasks, data.tasks),
       resolved: existing.resolved || data.resolved,
     });
+    await needCreated(existing.id!);
     return 'updated';
   }
   let cid = circleId;
@@ -31,7 +33,7 @@ export async function receiveNeed(data: ReceivedNeed, circleId?: number): Promis
     cid = match?.id ?? ((await db.circles.add({ name: data.circleName, members: [data.author], createdAt: Date.now() })) as number);
   }
   const { circleName: _n, ...need } = data;
-  await db.needs.add({ ...need, circleId: cid });
+  await needCreated((await db.needs.add({ ...need, circleId: cid })) as number);
   return 'added';
 }
 

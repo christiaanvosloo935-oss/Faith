@@ -29,6 +29,9 @@ export interface Circle {
   name: string;
   members: string[];
   createdAt: number;
+  /** Set when live sync is on: the server-side circle id and its encryption key. */
+  syncId?: string;
+  key?: string;
 }
 
 export type TaskKind = 'meal' | 'ride' | 'childcare' | 'visit' | 'errand' | 'other';
@@ -54,6 +57,8 @@ export interface Need {
   resolved: boolean;
   /** Stable id so the same need received twice via link isn't duplicated. */
   shareId: string;
+  /** Changed locally and not yet uploaded. */
+  dirty?: boolean;
 }
 
 export interface Pin {
@@ -83,6 +88,8 @@ export interface Pact {
   checkInDay: number; // 0 = Sunday
   questions: string[];
   startedAt: number;
+  syncId?: string;
+  key?: string;
 }
 
 export interface CheckInAnswer {
@@ -100,6 +107,7 @@ export interface CheckIn {
   answers: CheckInAnswer[];
   commitment: string;
   shareId: string;
+  dirty?: boolean;
 }
 
 export type SectionKey =
@@ -175,6 +183,11 @@ db.version(1).stores({
   checkins: '++id, pactId, createdAt, &shareId',
   sermons: '++id, date, createdAt, &shareId',
   settings: 'key',
+});
+
+db.version(2).stores({
+  circles: '++id, name, &syncId',
+  pacts: '++id, &syncId',
 });
 
 export async function getSetting<T>(key: string, fallback: T): Promise<T> {

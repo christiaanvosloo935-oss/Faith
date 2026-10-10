@@ -5,6 +5,7 @@ import { db, type Prayer, type PrayerStatus, type Visibility } from '../db';
 import { DAY, formatDate, relativeDays } from '../lib/dates';
 import { prayersToRevisit, REVISIT_OPTIONS } from '../lib/logic';
 import { createNeed } from '../lib/actions';
+import { cancel, downloadIcs, reminderFor, schedule, toCalEvent } from '../lib/reminders';
 import { PRAYER_CATEGORIES } from '../data/scripture';
 import { Empty, PageHeader, Segmented, Sheet, Verse, VisibilityBadge, VisibilityPicker, useMyName, useToast } from '../components/ui';
 import { IconPlus, IconTrash } from '../components/Icons';
@@ -100,6 +101,7 @@ function PrayerForm({ onDone }: { onDone: () => void }) {
       await createNeed({ circleId, author: me, title: p.sharedSummary, detail: '', tasks: [] });
     }
     await db.prayers.add(p);
+    void schedule(reminderFor.prayer(p.createdAt, p.revisitAt));
     toast(visibility === 'circle' ? 'Prayer saved, and the short version was shared with your circle' : 'Prayer saved on this device');
     onDone();
   };
@@ -191,9 +193,16 @@ function PrayerCard({ prayer: p }: { prayer: Prayer }) {
             <button className="btn primary small" onClick={() => setAnswering(true)}>
               It was answered
             </button>
+            <button className="btn ghost small" onClick={() => downloadIcs('prayer-look-back', [toCalEvent(reminderFor.prayer(p.createdAt, p.revisitAt))])}>
+              Add look-back to calendar
+            </button>
             <button
               className="btn ghost small danger"
-              onClick={() => confirm('Delete this prayer? This cannot be undone.') && db.prayers.delete(p.id!)}
+              onClick={() => {
+                if (!confirm('Delete this prayer? This cannot be undone.')) return;
+                void cancel(`prayer-${p.createdAt}`);
+                void db.prayers.delete(p.id!);
+              }}
               aria-label="Delete prayer"
             >
               <IconTrash size={16} />
@@ -215,6 +224,7 @@ function AnswerForm({ prayer, onDone, initial = 'answered' }: { prayer: Prayer; 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
     await db.prayers.update(prayer.id!, { status, answerNote: note.trim(), answeredAt: Date.now() });
+    void cancel(`prayer-${prayer.createdAt}`);
     toast('A new stone of remembrance');
     onDone();
   };
@@ -240,7 +250,11 @@ function AnswerForm({ prayer, onDone, initial = 'answered' }: { prayer: Prayer; 
 
 function LookBackCard({ prayer: p }: { prayer: Prayer }) {
   const [answering, setAnswering] = useState<PrayerStatus | null>(null);
-  const snooze = (days: number) => db.prayers.update(p.id!, { revisitAt: Date.now() + days * DAY });
+  const snooze = async (days: number) => {
+    const revisitAt = Date.now() + days * DAY;
+    await db.prayers.update(p.id!, { revisitAt });
+    void schedule(reminderFor.prayer(p.createdAt, revisitAt));
+  };
   return (
     <article className="card lookback">
       <p className="eyebrow">You started praying this {relativeDays(p.createdAt)}</p>

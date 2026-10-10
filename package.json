@@ -21,6 +21,7 @@
     "vitest": "^3.2.7"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.117",
     "dexie": "4.2",
     "dexie-react-hooks": "^4.4.0",
     "leaflet": "^1.9.4",

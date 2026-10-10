@@ -12,13 +12,13 @@ export interface SharePacket<T = unknown> {
   data: T;
 }
 
-function toBase64Url(bytes: Uint8Array): string {
+export function toBase64Url(bytes: Uint8Array): string {
   let s = '';
   for (const b of bytes) s += String.fromCharCode(b);
   return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }
 
-function fromBase64Url(s: string): Uint8Array {
+export function fromBase64Url(s: string): Uint8Array {
   const b64 = s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4);
   const bin = atob(b64);
   return Uint8Array.from(bin, (c) => c.charCodeAt(0));
