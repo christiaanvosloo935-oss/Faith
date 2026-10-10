@@ -1,9 +1,9 @@
 {
   "name": "Faith",
   "short_name": "Faith",
-  "start_url": "/",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#f5eedf",
   "theme_color": "#3f5a36",
-  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
 }

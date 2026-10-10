@@ -4,6 +4,7 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db, type FollowUp, type SectionKey, type Sermon, type SermonLayout } from '../db';
 import { formatDate, relativeDays } from '../lib/dates';
 import { shareResultMessage, shareSermon } from '../lib/actions';
+import { cancel, downloadIcs, reminderFor, toCalEvent } from '../lib/reminders';
 import { cloneLayout, LAYOUT_STYLES, MOTIFS, PALETTES, paletteById, SECTION_LABELS, SERMON_THEMES, themeById } from '../data/sermonThemes';
 import { Segmented, Sheet, VisibilityBadge, useMyName, useToast } from '../components/ui';
 import { MotifPattern, VineDivider } from '../components/Decor';
@@ -175,10 +176,18 @@ function FollowUps({ sermon }: { sermon: Sermon }) {
     const text = (drafts[key] ?? '').trim();
     if (!text) return;
     await db.sermons.update(sermon.id!, { followUps: sermon.followUps.map((f) => (f.key === key ? { ...f, response: text, doneAt: Date.now() } : f)) });
+    void cancel(`sermon-${sermon.shareId}-${key}`);
     toast('Follow-through saved');
   };
 
+  const upcoming = sermon.followUps.filter((f) => !f.doneAt && f.dueAt > now);
   return (
+    <>
+    {upcoming.length > 0 && (
+      <button className="btn small" onClick={() => downloadIcs('sermon-follow-ups', upcoming.map((f) => toCalEvent(reminderFor.sermon(sermon.shareId, f.key, f.dueAt))))}>
+        Add follow-ups to my calendar
+      </button>
+    )}
     <ol className="followups">
       {sermon.followUps.map((f) => {
         const open = f.dueAt <= now;
@@ -208,6 +217,7 @@ function FollowUps({ sermon }: { sermon: Sermon }) {
         );
       })}
     </ol>
+    </>
   );
 }
 

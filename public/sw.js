@@ -1,8 +1,9 @@
-// Offline support: cache the app shell and serve it when there is no network.
-const CACHE = 'faith-v1';
+// Offline support and push notifications.
+const CACHE = 'faith-v2';
+const SHELL = ['./', './index.html', './manifest.webmanifest', './icon.svg'];
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(['/', '/index.html', '/manifest.webmanifest', '/icon.svg'])));
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
   self.skipWaiting();
 });
 
@@ -21,6 +22,39 @@ self.addEventListener('fetch', (e) => {
         caches.open(CACHE).then((c) => c.put(request, copy));
         return res;
       })
-      .catch(() => caches.match(request).then((r) => r || caches.match('/index.html'))),
+      .catch(() => caches.match(request).then((r) => r || caches.match('./index.html'))),
+  );
+});
+
+self.addEventListener('push', (e) => {
+  let data = { title: 'Faith', body: '', url: '#/' };
+  try {
+    data = { ...data, ...e.data.json() };
+  } catch {
+    /* plain text or empty */
+  }
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: './icon.svg',
+      badge: './icon.svg',
+      data: { url: data.url },
+    }),
+  );
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const target = new URL(self.registration.scope).href + (e.notification.data?.url || '#/');
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+      for (const c of list) {
+        if ('focus' in c) {
+          c.navigate(target);
+          return c.focus();
+        }
+      }
+      return self.clients.openWindow(target);
+    }),
   );
 });

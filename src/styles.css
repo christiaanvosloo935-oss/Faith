@@ -1657,3 +1657,56 @@ svg.hero-sprig.right {
     font-size: 0.62rem;
   }
 }
+
+/* ─── Live sync ─── */
+.sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+  font-family: var(--sans);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--leaf) 16%, transparent);
+  color: var(--leaf-deep);
+}
+.sync-badge .pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.sync-badge.live .pulse {
+  animation: pulse 2s ease-in-out infinite;
+}
+.sync-badge.offline,
+.sync-badge.connecting {
+  background: var(--surface-2);
+  color: var(--muted);
+}
+.sync-badge.error {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+.linkish {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--leaf);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.btn.wrap-text {
+  white-space: normal;
+  height: auto;
+  padding: 8px 16px;
+  text-align: center;
+}

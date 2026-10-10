@@ -4,6 +4,7 @@ import { db, type Sermon, type Visibility } from '../db';
 import { isoDate } from '../lib/dates';
 import { uid } from '../lib/ids';
 import { buildFollowUps, rebuildFollowUps } from '../lib/logic';
+import { cancel, reminderFor, schedule } from '../lib/reminders';
 import { cloneLayout, paletteById, SERMON_THEMES, themeById } from '../data/sermonThemes';
 import { PageHeader, VisibilityPicker } from '../components/ui';
 import { MotifPattern } from '../components/Decor';
@@ -47,6 +48,10 @@ export default function SermonEditor() {
     const next = { ...s, questions };
     next.followUps = id ? rebuildFollowUps(next) : buildFollowUps(next);
     const newId = id ? (await db.sermons.put(next), Number(id)) : await db.sermons.add(next);
+    for (const f of next.followUps) {
+      if (f.doneAt || f.dueAt <= Date.now()) void cancel(`sermon-${next.shareId}-${f.key}`);
+      else void schedule(reminderFor.sermon(next.shareId, f.key, f.dueAt));
+    }
     nav(`/sermons/${newId}`, { replace: true });
   };
 

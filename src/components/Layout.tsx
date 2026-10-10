@@ -4,6 +4,8 @@ import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
 import { IconCircle, IconPlaces, IconPrayer, IconSermon, IconSettings, IconToday, IconWalk } from './Icons';
 import { Leaf } from './Decor';
+import { startSync } from '../sync/engine';
+import { syncAllReminders } from '../lib/reminders';
 
 const NAV = [
   { to: '/', label: 'Today', Icon: IconToday, end: true },
@@ -25,6 +27,11 @@ export default function Layout() {
   }, [theme]);
 
   useEffect(() => window.scrollTo(0, 0), [pathname]);
+
+  useEffect(() => {
+    void startSync();
+    void syncAllReminders().catch(() => {});
+  }, []);
 
   return (
     <div className="shell">

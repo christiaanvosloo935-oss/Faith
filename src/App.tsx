@@ -11,6 +11,7 @@ import SermonEditor from './pages/SermonEditor';
 import SermonView from './pages/SermonView';
 import Receive from './pages/Receive';
 import Settings from './pages/Settings';
+import Join from './pages/Join';
 
 export default function App() {
   return (
@@ -28,6 +29,7 @@ export default function App() {
             <Route path="sermons/:id" element={<SermonView />} />
             <Route path="sermons/:id/edit" element={<SermonEditor />} />
             <Route path="receive/:payload" element={<Receive />} />
+            <Route path="join/:token" element={<Join />} />
             <Route path="settings" element={<Settings />} />
             <Route path="*" element={<Today />} />
           </Route>
