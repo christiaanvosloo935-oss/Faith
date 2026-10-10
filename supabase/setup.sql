@@ -102,7 +102,7 @@ select cron.schedule(
   'faith-send-reminders',
   '*/15 * * * *',
   $$ select net.http_post(
-       url := 'https://sbginzxeuldiflufucuf.supabase.co/functions/v1/send-reminders',
+       url := 'https://sbginzxeuldiflufucuf.supabase.co/functions/v1/smart-handler',
        headers := '{"Content-Type": "application/json"}'::jsonb,
        body := '{}'::jsonb
      ) $$

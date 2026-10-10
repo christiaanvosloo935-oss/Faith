@@ -7,9 +7,9 @@ Everything here is free. You do each step once.
 1. **Anonymous sign-ins:** Authentication → Sign In / Providers → turn on **Allow anonymous sign-ins** → Save.
 2. **Database:** SQL Editor → New query → paste all of [`supabase/setup.sql`](supabase/setup.sql) → Run. Success shows a row like `schedule: 1`.
 3. **Reminder function:** Edge Functions → Deploy a new function → **Via Editor**.
-   - Name it exactly `send-reminders`.
-   - Replace the sample code with all of [`supabase/functions/send-reminders/index.ts`](supabase/functions/send-reminders/index.ts) → Deploy.
-   - Open the function's **Details** tab, turn **off** "Enforce JWT verification" (or "Verify JWT") → Save. The 15-minute timer calls it without a login, and the function only ever sends reminders that are already due.
+   - This project's function is called `smart-handler` (the address in `supabase/setup.sql` points to it). If you create it under another name, update the URL at the bottom of `setup.sql` and re-run that part.
+   - Keep the file named `index.ts` and replace its code with all of [`supabase/functions/send-reminders/index.ts`](supabase/functions/send-reminders/index.ts) → Deploy.
+   - Open the function's **Details** tab, turn **off** "Verify JWT with legacy secret" → Save. The 15-minute timer calls it without a login, and the function only ever sends reminders that are already due.
 4. **Notification keys:** Edge Functions → **Secrets** → add:
    - `VAPID_PUBLIC_KEY`: the public key in [`src/config.ts`](src/config.ts) (`VAPID_PUBLIC_KEY`).
    - `VAPID_PRIVATE_KEY`: the private key (kept out of this repo; generate a new pair with `npx web-push generate-vapid-keys` if it's ever lost, and update both places).
