@@ -74,14 +74,15 @@ create table if not exists public.push_subscriptions (
 );
 
 create table if not exists public.reminders (
-  id text primary key,
+  id text not null,
   user_id uuid not null default auth.uid(),
   fire_at timestamptz not null,
   title text not null,
   body text not null,
   url text,
   repeat_days int,
-  sent_at timestamptz
+  sent_at timestamptz,
+  primary key (user_id, id)
 );
 create index if not exists reminders_due on public.reminders (fire_at) where sent_at is null;
 

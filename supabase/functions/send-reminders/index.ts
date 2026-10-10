@@ -32,9 +32,9 @@ Deno.serve(async () => {
     if (r.repeat_days) {
       let next = new Date(r.fire_at).getTime();
       while (next <= now) next += r.repeat_days * DAY;
-      await sb.from('reminders').update({ fire_at: new Date(next).toISOString() }).eq('id', r.id);
+      await sb.from('reminders').update({ fire_at: new Date(next).toISOString() }).eq('user_id', r.user_id).eq('id', r.id);
     } else {
-      await sb.from('reminders').update({ sent_at: new Date(now).toISOString() }).eq('id', r.id);
+      await sb.from('reminders').update({ sent_at: new Date(now).toISOString() }).eq('user_id', r.user_id).eq('id', r.id);
     }
   }
   return new Response(JSON.stringify({ due: due?.length ?? 0, sent }), { headers: { 'Content-Type': 'application/json' } });

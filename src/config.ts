@@ -4,7 +4,7 @@
  * Leave the key empty to run the app fully offline (link sharing only).
  */
 export const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? 'https://sbginzxeuldiflufucuf.supabase.co';
-export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
+export const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? 'sb_publishable_hOXuSQWeFLw9bEoNtNhrtg_olg__kSq';
 
 /** Public half of the web push key pair. The private half is a Supabase secret. */
 export const VAPID_PUBLIC_KEY = 'BNUiC5XadLWQUnVTEIyMqjgg-7jQwNwySN-gs27INvzdX9d1DCP4NjdTlXHrvbpNUlP6_X14zpbGJKTSzfEhD7A';

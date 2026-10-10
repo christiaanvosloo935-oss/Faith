@@ -182,8 +182,8 @@ export async function disablePush() {
 export async function schedule(r: Reminder) {
   if (!(await pushEnabled())) return;
   try {
-    const { sb } = await ensureSession();
-    await sb.from('reminders').upsert({ id: r.id, fire_at: r.fireAt.toISOString(), title: r.title, body: r.body, url: r.url, repeat_days: r.repeatDays ?? null, sent_at: null });
+    const { sb, userId } = await ensureSession();
+    await sb.from('reminders').upsert({ user_id: userId, id: r.id, fire_at: r.fireAt.toISOString(), title: r.title, body: r.body, url: r.url, repeat_days: r.repeatDays ?? null, sent_at: null });
   } catch {
     /* offline: syncAllReminders catches up next time */
   }
@@ -202,7 +202,7 @@ export async function cancel(...ids: string[]) {
 export async function syncAllReminders() {
   if (!(await pushEnabled())) return;
   const list = await allUpcoming();
-  const { sb } = await ensureSession();
-  const rows = list.map((r) => ({ id: r.id, fire_at: r.fireAt.toISOString(), title: r.title, body: r.body, url: r.url, repeat_days: r.repeatDays ?? null, sent_at: null }));
+  const { sb, userId } = await ensureSession();
+  const rows = list.map((r) => ({ user_id: userId, id: r.id, fire_at: r.fireAt.toISOString(), title: r.title, body: r.body, url: r.url, repeat_days: r.repeatDays ?? null, sent_at: null }));
   if (rows.length) await sb.from('reminders').upsert(rows);
 }

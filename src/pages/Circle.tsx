@@ -7,6 +7,10 @@ import { DAY, formatDate, relativeDays, WEEKDAYS } from '../lib/dates';
 import { uid } from '../lib/ids';
 import { sendLink } from '../lib/share';
 import { PACT_QUESTIONS } from '../data/scripture';
+import { syncConfigured } from '../config';
+import { checkInCreated, enableCircleSync, enablePactSync, inviteLink, leaveSpace, saveNeed } from '../sync/engine';
+import { cancel, downloadIcs, reminderFor, schedule, toCalEvent } from '../lib/reminders';
+import { SyncBadge } from '../components/SyncBadge';
 import { Empty, PageHeader, Segmented, Sheet, Verse, VisibilityBadge, useMyName, useToast } from '../components/ui';
 import { IconCheck, IconHand, IconLock, IconPlus, IconShare, IconTrash, IconUsers } from '../components/Icons';
 
@@ -73,15 +77,23 @@ function Burdens() {
         <>
           <div className="circle-head card flat">
             <div>
-              <h2>{active.name}</h2>
+              <h2>
+                {active.name} <SyncBadge synced={!!active.syncId} />
+              </h2>
               <p className="meta">{active.members.length ? active.members.join(', ') : 'Just you so far'}</p>
             </div>
-            <button className="btn primary" onClick={() => setAddingNeed(true)}>
-              <IconPlus size={18} /> Share a need
-            </button>
+            <div className="actions wrap">
+              <button className="btn primary" onClick={() => setAddingNeed(true)}>
+                <IconPlus size={18} /> Share a need
+              </button>
+              {syncConfigured() && <InviteButton circle={active} />}
+            </div>
           </div>
           <p className="muted small privacy-note">
-            <IconLock size={13} /> Needs are stored on your phone. Send them to your circle with a link, through any messaging app.
+            <IconLock size={13} />{' '}
+            {active.syncId
+              ? 'Live and end-to-end encrypted. Only people with your invite link can read this circle.'
+              : 'Needs are stored on your phone. Send them to your circle with a link, or turn on live sync.'}
           </p>
           {open.length ? open.map((n) => <NeedCard key={n.id} need={n} />) : <Empty title="No open needs">When someone shares a need, it appears here so the circle can pray and help.</Empty>}
           {resolved.length > 0 && (
@@ -96,6 +108,7 @@ function Burdens() {
             className="btn ghost small danger"
             onClick={async () => {
               if (!confirm(`Delete the circle “${active.name}” and its needs from this device?`)) return;
+              await leaveSpace('circle', active.id!);
               await db.needs.where('circleId').equals(active.id!).delete();
               await db.circles.delete(active.id!);
               setActiveId(null);
@@ -223,8 +236,8 @@ function NeedCard({ need: n }: { need: Need }) {
   const me = useMyName();
   const toast = useToast();
   const prayed = n.prayedBy.includes(me);
-  const update = (patch: Partial<Need>) => db.needs.update(n.id!, patch);
-  const setTask = (id: string, patch: Partial<HelpTask>) => update({ tasks: n.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)) });
+  const update = (patch: Partial<Need>) => saveNeed(n.id!, patch);
+  const setTask = (id: string, patch: Partial<HelpTask>) => saveNeed(n.id!, (cur) => ({ tasks: cur.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)) }));
 
   return (
     <article className={`card need ${n.resolved ? 'is-resolved' : ''}`}>
@@ -271,7 +284,7 @@ function NeedCard({ need: n }: { need: Need }) {
       )}
 
       <div className="actions wrap">
-        <button className={`btn small ${prayed ? 'prayed' : ''}`} onClick={() => update({ prayedBy: prayed ? n.prayedBy.filter((x) => x !== me) : [...n.prayedBy, me] })}>
+        <button className={`btn small ${prayed ? 'prayed' : ''}`} onClick={() => saveNeed(n.id!, (cur) => ({ prayedBy: prayed ? cur.prayedBy.filter((x) => x !== me) : [...new Set([...cur.prayedBy, me])] }))}>
           <IconHand size={16} /> {prayed ? 'Prayed' : 'I prayed'} {n.prayedBy.length > 0 && <span className="count">{n.prayedBy.length}</span>}
         </button>
         <button className="btn small ghost" onClick={async () => toast(shareResultMessage(await shareNeed(n, me)))}>
@@ -327,7 +340,9 @@ function PactView() {
           <span className="pact-link" aria-hidden />
           <span className="avatar alt">{pact.partner.slice(0, 1).toUpperCase()}</span>
         </div>
-        <h2>You & {pact.partner}</h2>
+        <h2>
+          You & {pact.partner} <SyncBadge synced={!!pact.syncId} />
+        </h2>
         <p className="meta">
           Check-in day: {WEEKDAYS[pact.checkInDay]}
           {today === pact.checkInDay && ' (today)'} · since {formatDate(pact.startedAt)}
@@ -339,7 +354,11 @@ function PactView() {
           <button className="btn ghost small" onClick={() => setEditing(true)}>
             Edit pact
           </button>
+          <button className="btn ghost small" onClick={() => downloadIcs('weekly-check-in', [toCalEvent(reminderFor.pact(pact.checkInDay))])}>
+            Add to calendar
+          </button>
         </div>
+        {syncConfigured() && <PactLive pact={pact} />}
       </div>
 
       {quietPartner && (
@@ -401,6 +420,7 @@ function PactForm({ pact, onDone }: { pact?: Pact; onDone: () => void }) {
         if (!partner.trim() || !questions.length) return;
         if (pact?.id) await db.pacts.update(pact.id, { partner: partner.trim(), checkInDay: day, questions });
         else await db.pacts.add({ partner: partner.trim(), checkInDay: day, questions, startedAt: Date.now() });
+        void schedule(reminderFor.pact(day));
         onDone();
       }}
     >
@@ -450,6 +470,8 @@ function PactForm({ pact, onDone }: { pact?: Pact; onDone: () => void }) {
           className="btn ghost small danger"
           onClick={async () => {
             if (!confirm('End this pact and delete all check-ins on this device?')) return;
+            await leaveSpace('pact', pact.id!);
+            void cancel('pact-weekly');
             await db.checkins.where('pactId').equals(pact.id!).delete();
             await db.pacts.delete(pact.id!);
             onDone();
@@ -475,9 +497,12 @@ function CheckInForm({ pact, lastCommitment, onDone }: { pact: Pact; lastCommitm
       onSubmit={async (e) => {
         e.preventDefault();
         const c: CheckIn = { pactId: pact.id!, from: 'me', createdAt: Date.now(), answers, commitment: commitment.trim(), shareId: uid() };
-        await db.checkins.add(c);
+        const id = (await db.checkins.add(c)) as number;
         onDone();
-        if (answers.some((a) => a.shared && a.answer.trim()) || c.commitment) {
+        if (pact.syncId) {
+          await checkInCreated(id);
+          toast(`Saved. Your shared answers are on their way to ${pact.partner}`);
+        } else if (answers.some((a) => a.shared && a.answer.trim()) || c.commitment) {
           if (confirm(`Send the answers you marked as shared to ${pact.partner}?`)) toast(shareResultMessage(await shareCheckIn(c, me)));
         } else toast('Check-in saved privately');
       }}
@@ -552,5 +577,66 @@ function CheckInCard({ c, title, mine, partner }: { c: CheckIn; title: string; m
         </div>
       )}
     </article>
+  );
+}
+
+/* ───────────────────────── Live sync controls ───────────────────────── */
+
+function InviteButton({ circle }: { circle: Circle }) {
+  const me = useMyName();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  const invite = async () => {
+    setBusy(true);
+    try {
+      const link = circle.syncId ? inviteLink('circle', circle.syncId, circle.key!) : await enableCircleSync(circle);
+      toast(shareResultMessage(await sendLink(`Join ${circle.name}`, `${me} invited you to “${circle.name}” on Faith, to pray and help each other. Tap to join:`, link)));
+    } catch (e) {
+      toast((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+  return (
+    <button className="btn" onClick={invite} disabled={busy}>
+      <IconShare size={16} /> {busy ? 'Setting up…' : circle.syncId ? 'Invite people' : 'Go live & invite'}
+    </button>
+  );
+}
+
+function PactLive({ pact }: { pact: Pact }) {
+  const me = useMyName();
+  const toast = useToast();
+  const [busy, setBusy] = useState(false);
+  if (pact.syncId)
+    return (
+      <p className="muted small">
+        Connected live with {pact.partner}. Shared answers arrive on their phone automatically.{' '}
+        <button className="linkish" onClick={async () => toast(shareResultMessage(await sendLink('Our pact', `Join our accountability pact on Faith:`, inviteLink('pact', pact.syncId!, pact.key!))))}>
+          Resend invite
+        </button>
+      </p>
+    );
+  return (
+    <div className="callout">
+      <p className="small">Connect live, so check-ins arrive on {pact.partner}’s phone automatically. End-to-end encrypted.</p>
+      <button
+        className="btn small"
+        disabled={busy}
+        onClick={async () => {
+          setBusy(true);
+          try {
+            const link = await enablePactSync(pact);
+            toast(shareResultMessage(await sendLink('Our pact', `${me} invited you to an accountability pact on Faith. Tap to join:`, link)));
+          } catch (e) {
+            toast((e as Error).message);
+          } finally {
+            setBusy(false);
+          }
+        }}
+      >
+        {busy ? 'Setting up…' : `Invite ${pact.partner} to connect`}
+      </button>
+    </div>
   );
 }
