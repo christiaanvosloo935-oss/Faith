@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { db, type CheckIn, type Pin, type Sermon } from '../db';
+import { db, type CheckIn, type Sermon } from '../db';
 import { decodePacket, type SharePacket } from '../lib/share';
-import { receiveCheckIn, receiveNeed, receivePin, receiveSermon, type ReceivedNeed } from '../lib/receive';
+import { receiveCheckIn, receiveNeed, receiveSermon, type ReceivedNeed } from '../lib/receive';
 import { formatDate } from '../lib/dates';
-import { PageHeader, Verse, useToast } from '../components/ui';
+import { PageHeader, useToast } from '../components/ui';
 
 export default function Receive() {
   const { payload = '' } = useParams();
@@ -49,10 +49,6 @@ export default function Receive() {
         toast(r.existed ? 'You already have these notes' : 'Sermon notes saved');
         return nav(`/sermons/${r.id}`);
       }
-      case 'pin':
-        await receivePin(packet.data as Omit<Pin, 'id'>);
-        toast('Pin saved');
-        return nav('/places');
       default:
         toast('This kind of link is not supported yet');
     }
@@ -136,16 +132,6 @@ function Preview({ packet }: { packet: SharePacket }) {
           <h2>{s.title}</h2>
           <p className="meta">{[s.preacher, s.church, s.passage].filter(Boolean).join(' · ')}</p>
           {s.mainPoint && <p className="s-main">“{s.mainPoint}”</p>}
-        </>
-      );
-    }
-    case 'pin': {
-      const p = packet.data as Pin;
-      return (
-        <>
-          <p className="eyebrow">Pinned verse · {p.placeName}</p>
-          <Verse reference={p.reference} text={p.text} />
-          {p.note && <p className="answer-note">{p.note}</p>}
         </>
       );
     }

@@ -1,4 +1,4 @@
-import { db, type CheckIn, type HelpTask, type Need, type Pin, type Sermon } from '../db';
+import { db, type CheckIn, type HelpTask, type Need, type Sermon } from '../db';
 import { uid } from './ids';
 import { sendLink, shareUrl, type SharePacket } from './share';
 import { needCreated } from '../sync/engine';
@@ -34,11 +34,6 @@ export async function shareSermon(s: Sermon, from: string) {
   return sendLink(s.title, `Sermon notes: ${s.title}${s.passage ? ` (${s.passage})` : ''}`, shareUrl(packet));
 }
 
-export async function sharePin(p: Pin, from: string) {
-  const { id: _id, ...data } = p;
-  const packet: SharePacket = { v: 1, kind: 'pin', from, data };
-  return sendLink(`${p.reference} at ${p.placeName}`, `${from} pinned ${p.reference} to ${p.placeName}:`, shareUrl(packet));
-}
 
 export function shareResultMessage(r: 'shared' | 'copied' | 'cancelled') {
   return r === 'copied' ? 'Link copied. Paste it into a message.' : r === 'shared' ? 'Shared' : 'Not shared';

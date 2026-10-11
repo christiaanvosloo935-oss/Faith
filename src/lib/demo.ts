@@ -89,7 +89,6 @@ export async function seedDemo() {
   s2.followUps = s2.followUps.map((f) => ({ ...f, response: 'Done, and it helped more than I expected.', doneAt: f.dueAt + DAY }));
   await db.sermons.bulkAdd([s1, s2]);
 
-  await db.pins.add({ lat: -33.9321, lng: 18.8602, placeName: 'The oak bench on Dorp Street', reference: 'Psalm 1:3', text: 'And he shall be like a tree planted by the rivers of water, that bringeth forth his fruit in his season; his leaf also shall not wither.', note: 'Where I decided to follow Jesus.', createdAt: now - 100 * DAY, visibility: 'private' });
 
   const entries: ObedienceEntry[] = [];
   for (const back of [1, 2, 3, 5, 6, 8, 9, 10, 13, 15]) {

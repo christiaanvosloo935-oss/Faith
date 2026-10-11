@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { buildFollowUps, dueFollowUps, livedOutStreak, prayersToRevisit, rebuildFollowUps, stepForDate } from './logic';
 import { decodePacket, encodePacket } from './share';
-import { distanceKm, nearest } from './geo';
 import { mergeTasks } from './receive';
 import { DAY, isoDate } from './dates';
-import { BIBLICAL_SITES, OBEDIENCE_STEPS } from '../data/scripture';
+import { OBEDIENCE_STEPS } from '../data/scripture';
 import type { Prayer, Sermon } from '../db';
 
 describe('daily step', () => {
@@ -84,17 +83,5 @@ describe('help tasks merge', () => {
       { id: '1', kind: 'meal', label: 'Meal', done: false, claimedBy: 'Sarah' },
       { id: '2', kind: 'ride', label: 'Ride', done: true, claimedBy: 'Thabo' },
     ]);
-  });
-});
-
-describe('geo', () => {
-  it('measures Jerusalem to Bethlehem at about 8 km', () => {
-    const j = BIBLICAL_SITES.find((s) => s.id === 'jerusalem')!;
-    const b = BIBLICAL_SITES.find((s) => s.id === 'bethlehem')!;
-    expect(distanceKm(j, b)).toBeGreaterThan(7);
-    expect(distanceKm(j, b)).toBeLessThan(10);
-  });
-  it('finds the nearest site', () => {
-    expect(nearest({ lat: 41.9, lng: 12.5 }, BIBLICAL_SITES)?.item.id).toBe('rome');
   });
 });

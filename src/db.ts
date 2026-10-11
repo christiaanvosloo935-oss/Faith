@@ -61,18 +61,6 @@ export interface Need {
   dirty?: boolean;
 }
 
-export interface Pin {
-  id?: number;
-  lat: number;
-  lng: number;
-  placeName: string;
-  reference: string;
-  text: string;
-  note: string;
-  createdAt: number;
-  visibility: Visibility;
-}
-
 export interface ObedienceEntry {
   id?: number;
   date: string; // YYYY-MM-DD
@@ -165,7 +153,6 @@ export const db = new Dexie('faith') as Dexie & {
   prayers: EntityTable<Prayer, 'id'>;
   circles: EntityTable<Circle, 'id'>;
   needs: EntityTable<Need, 'id'>;
-  pins: EntityTable<Pin, 'id'>;
   obedience: EntityTable<ObedienceEntry, 'id'>;
   pacts: EntityTable<Pact, 'id'>;
   checkins: EntityTable<CheckIn, 'id'>;
@@ -190,6 +177,9 @@ db.version(2).stores({
   pacts: '++id, &syncId',
 });
 
+// The Places section was removed; drop its table.
+db.version(3).stores({ pins: null });
+
 export async function getSetting<T>(key: string, fallback: T): Promise<T> {
   const row = await db.settings.get(key);
   return row ? (row.value as T) : fallback;
@@ -199,7 +189,7 @@ export function setSetting(key: string, value: unknown) {
   return db.settings.put({ key, value });
 }
 
-const TABLES = ['prayers', 'circles', 'needs', 'pins', 'obedience', 'pacts', 'checkins', 'sermons', 'settings'] as const;
+const TABLES = ['prayers', 'circles', 'needs', 'obedience', 'pacts', 'checkins', 'sermons', 'settings'] as const;
 
 /** Full JSON backup so a lost phone doesn't mean lost prayers. */
 export async function exportAll() {

@@ -2,7 +2,7 @@ import { NavLink, Outlet, useLocation, Link } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../db';
-import { IconCircle, IconPlaces, IconPrayer, IconSermon, IconSettings, IconToday, IconWalk } from './Icons';
+import { IconCircle, IconPrayer, IconSermon, IconSettings, IconToday, IconWalk } from './Icons';
 import { Leaf } from './Decor';
 import { startSync } from '../sync/engine';
 import { syncAllReminders } from '../lib/reminders';
@@ -12,7 +12,6 @@ const NAV = [
   { to: '/prayer', label: 'Answered', Icon: IconPrayer },
   { to: '/circle', label: 'Circle', Icon: IconCircle },
   { to: '/walk', label: 'Walk', Icon: IconWalk },
-  { to: '/places', label: 'Places', Icon: IconPlaces },
   { to: '/sermons', label: 'Sermons', Icon: IconSermon },
 ];
 

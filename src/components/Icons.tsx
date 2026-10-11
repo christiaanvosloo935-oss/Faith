@@ -36,12 +36,6 @@ export const IconWalk = (p: P) => (
     <circle cx="12" cy="2.5" r=".5" fill="currentColor" />
   </Svg>
 );
-export const IconPlaces = (p: P) => (
-  <Svg {...p}>
-    <path d="M12 21s-7-6.1-7-11.5A7 7 0 0 1 19 9.5C19 14.9 12 21 12 21z" />
-    <circle cx="12" cy="9.5" r="2.5" />
-  </Svg>
-);
 export const IconSermon = (p: P) => (
   <Svg {...p}>
     <path d="M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1z" />
@@ -119,13 +113,6 @@ export const IconPalette = (p: P) => (
     <circle cx="7.5" cy="11" r="1" fill="currentColor" />
     <circle cx="10" cy="7" r="1" fill="currentColor" />
     <circle cx="15" cy="7" r="1" fill="currentColor" />
-  </Svg>
-);
-export const IconLocate = (p: P) => (
-  <Svg {...p}>
-    <circle cx="12" cy="12" r="7" />
-    <circle cx="12" cy="12" r="2" fill="currentColor" />
-    <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
   </Svg>
 );
 export const IconHand = (p: P) => (

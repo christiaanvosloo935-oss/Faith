@@ -10,7 +10,6 @@ A local-first Christian app. Everything is stored on the person's device, and th
 | **Circle: Burdens** | Share a need with your group, pray for it, and claim practical help (meals, rides, childcare…) | 👥 Circle |
 | **Circle: Accountability** | Weekly pact with one partner, using Wesley-style questions; you choose answer by answer what your partner sees | 🔒 / 👥 per answer |
 | **Walk** | One daily Scripture-based action step; tracks steps lived out, not chapters read | 🔒 Private |
-| **Places** | Map of biblical sites by era, verses for your surroundings, and verses pinned to real places that come back when you return | 🔒 / 🌍 |
 | **Sermons** | Sermon notes with Mon/Wed/Fri follow-through. Each theme has its own layout (scroll, cards or journal), colours and decoration, and every page can be customised, including section order and visibility | 🌍 / 🔒 |
 
 ## How sharing works (for now)

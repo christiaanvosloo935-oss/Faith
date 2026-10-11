@@ -1,4 +1,4 @@
-import { db, type CheckIn, type HelpTask, type Need, type Pin, type Sermon } from '../db';
+import { db, type CheckIn, type HelpTask, type Need, type Sermon } from '../db';
 import { buildFollowUps } from './logic';
 import { needCreated } from '../sync/engine';
 import type { SharePacket } from './share';
@@ -52,6 +52,3 @@ export async function receiveSermon(data: Omit<Sermon, 'id' | 'followUps'>): Pro
   return { id, existed: false };
 }
 
-export async function receivePin(data: Omit<Pin, 'id'>) {
-  return db.pins.add({ ...data, createdAt: Date.now() });
-}

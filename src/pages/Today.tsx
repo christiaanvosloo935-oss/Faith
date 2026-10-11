@@ -8,6 +8,11 @@ import { Verse, useMyName } from '../components/ui';
 import { Leaf, Sprig, VineDivider } from '../components/Decor';
 import { IconCircle, IconPrayer, IconSermon, IconWalk } from '../components/Icons';
 
+function plural(n: number, word: string, none?: string) {
+  if (n === 0 && none) return none;
+  return `${n} ${word}${n === 1 ? '' : 's'}`;
+}
+
 export default function Today() {
   const me = useMyName();
   const step = stepForDate();
@@ -72,8 +77,8 @@ export default function Today() {
               </>
             ) : (
               <>
-                <h3>{prayers.filter((p) => p.status === 'praying').length} prayers on your heart</h3>
-                <p className="meta">{answeredCount ? `${answeredCount} stones of remembrance so far` : 'Write your first prayer'}</p>
+                <h3>{plural(prayers.filter((p) => p.status === 'praying').length, 'prayer', 'No prayers yet')}{prayers.some((p) => p.status === 'praying') ? ' on your heart' : ''}</h3>
+                <p className="meta">{answeredCount ? `${plural(answeredCount, 'stone')} of remembrance so far` : 'Write your first prayer'}</p>
               </>
             )}
           </div>

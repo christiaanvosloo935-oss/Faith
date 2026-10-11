@@ -3,7 +3,7 @@
  * browsers never send to a server, so the person shares through their own
  * messaging app and nothing passes through ours.
  */
-export type ShareKind = 'need' | 'checkin' | 'sermon' | 'pin' | 'prayer';
+export type ShareKind = 'need' | 'checkin' | 'sermon' | 'prayer';
 
 export interface SharePacket<T = unknown> {
   v: 1;
