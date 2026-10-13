@@ -115,7 +115,7 @@ export function Verse({ reference, text, compact }: { reference: string; text: s
   return (
     <blockquote className={`verse ${compact ? 'compact' : ''}`}>
       <p>{text}</p>
-      <cite>{reference} (KJV)</cite>
+      <cite>{reference} (NIV)</cite>
     </blockquote>
   );
 }

@@ -5,6 +5,7 @@ import { isoDate } from '../lib/dates';
 import { PageHeader, Segmented, VISIBILITY_INFO, useToast } from '../components/ui';
 import { seedDemo } from '../lib/demo';
 import { syncConfigured } from '../config';
+import { NIV_NOTICE } from '../data/scripture';
 import { useSyncStatus } from '../sync/engine';
 import { allUpcoming, disablePush, downloadIcs, enablePush, isIos, isStandalone, pushEnabled, pushSupported, schedule, cancel, reminderFor, toCalEvent } from '../lib/reminders';
 
@@ -110,6 +111,11 @@ export default function Settings() {
             }}
           />
         </div>
+      </section>
+
+      <section className="card">
+        <h2>About</h2>
+        <p className="muted small">{NIV_NOTICE}</p>
       </section>
 
       <section className="card form">

@@ -58,7 +58,7 @@ function Burdens() {
 
   return (
     <div className="stack">
-      <Verse compact reference="Galatians 6:2" text="Bear ye one another’s burdens, and so fulfil the law of Christ." />
+      <Verse compact reference="Galatians 6:2" text="Carry each other’s burdens, and in this way you will fulfill the law of Christ." />
 
       <div className="circle-switcher">
         {circles.map((c) => (
@@ -312,7 +312,7 @@ function PactView() {
   if (pact === undefined || editing)
     return (
       <div className="stack">
-        <Verse compact reference="Ecclesiastes 4:9–10" text="Two are better than one… For if they fall, the one will lift up his fellow." />
+        <Verse compact reference="Ecclesiastes 4:9–10" text="Two are better than one, because they have a good return for their labor: If either of them falls down, one can help the other up." />
         <div className="card">
           <h2>{pact ? 'Edit your pact' : 'Make a pact with a friend'}</h2>
           <p className="muted">

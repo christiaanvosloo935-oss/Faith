@@ -311,7 +311,7 @@ function Stones({ answered }: { answered: Prayer[] }) {
       <Verse
         compact
         reference="Joshua 4:6"
-        text="That this may be a sign among you, that when your children ask their fathers in time to come, saying, What mean ye by these stones?"
+        text="…to serve as a sign among you. In the future, when your children ask you, ‘What do these stones mean?’"
       />
       <p className="stones-count">
         <strong>{answered.length}</strong> {answered.length === 1 ? 'prayer' : 'prayers'} answered

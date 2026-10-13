@@ -27,4 +27,4 @@ npm test           # unit tests
 npm run build      # typecheck + production build in dist/
 ```
 
-Built with React, TypeScript, Vite, Dexie (IndexedDB) and Leaflet. It is an installable PWA that works offline after the first visit. Scripture quotations are from the KJV (public domain).
+Built with React, TypeScript, Vite, Dexie (IndexedDB) and Leaflet. It is an installable PWA that works offline after the first visit. Scripture quotations are from the NIV; the required copyright notice is shown in Settings → About. The app quotes well under the 500-verse limit of Biblica's free-quotation permission. If you plan to sell the app or add many more verses, check [biblica.com/permissions](https://www.biblica.com/permissions/) first.
