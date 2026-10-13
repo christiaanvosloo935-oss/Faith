@@ -6,6 +6,7 @@ import { IconCircle, IconPrayer, IconSermon, IconSettings, IconToday, IconWalk }
 import { Leaf } from './Decor';
 import { startSync } from '../sync/engine';
 import { syncAllReminders } from '../lib/reminders';
+import UpdateBanner from './UpdateBanner';
 
 const NAV = [
   { to: '/', label: 'Today', Icon: IconToday, end: true },
@@ -34,6 +35,7 @@ export default function Layout() {
 
   return (
     <div className="shell">
+      <UpdateBanner />
       <aside className="rail">
         <Link to="/" className="brand">
           <Leaf size={26} color="var(--leaf)" />
