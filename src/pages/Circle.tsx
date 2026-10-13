@@ -500,11 +500,15 @@ function CheckInForm({ pact, lastCommitment, onDone }: { pact: Pact; lastCommitm
         const id = (await db.checkins.add(c)) as number;
         onDone();
         if (pact.syncId) {
-          await checkInCreated(id);
-          toast(`Saved. Your shared answers are on their way to ${pact.partner}`);
+          const result = await checkInCreated(id);
+          toast(
+            result === 'sent'
+              ? `Saved. ${pact.partner} can see your shared answers`
+              : `Saved on this phone, but not delivered to ${pact.partner} yet. It will send when you’re back online.`,
+          );
         } else if (answers.some((a) => a.shared && a.answer.trim()) || c.commitment) {
           if (confirm(`Send the answers you marked as shared to ${pact.partner}?`)) toast(shareResultMessage(await shareCheckIn(c, me)));
-        } else toast('Check-in saved privately');
+        } else toast(syncConfigured() ? `Saved on this phone only. ${pact.partner} won’t see it until you connect live (use “Invite ${pact.partner} to connect”).` : 'Check-in saved privately');
       }}
     >
       {lastCommitment && (
@@ -553,6 +557,7 @@ function CheckInCard({ c, title, mine, partner }: { c: CheckIn; title: string; m
       <button className="card-main" onClick={() => setOpen(!open)} aria-expanded={open}>
         <h3>{title}</h3>
         {c.commitment && <p className="meta">Commitment: {c.commitment}</p>}
+        {mine && c.dirty && <p className="meta">Not delivered yet. It will retry automatically.</p>}
       </button>
       {open && (
         <div className="card-more">
