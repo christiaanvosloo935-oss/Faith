@@ -58,6 +58,18 @@ create policy "add circle items" on public.items for insert to authenticated wit
 drop policy if exists "change circle items" on public.items;
 create policy "change circle items" on public.items for update to authenticated using (public.is_member(circle_id)) with check (public.is_member(circle_id));
 
+-- Stamp rows with the server's clock, so a phone with a wrong clock can't hide
+-- its updates from the other person's catch-up.
+create or replace function public.stamp_item() returns trigger
+language plpgsql set search_path = '' as $$
+begin
+  new.updated_at = now();
+  new.updated_by = auth.uid();
+  return new;
+end $$;
+drop trigger if exists stamp_item on public.items;
+create trigger stamp_item before insert or update on public.items for each row execute function public.stamp_item();
+
 do $$ begin
   alter publication supabase_realtime add table public.items;
 exception when duplicate_object then null; end $$;

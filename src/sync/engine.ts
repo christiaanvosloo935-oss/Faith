@@ -199,7 +199,7 @@ export async function saveNeed(id: number, change: Partial<Need> | ((n: Need) =>
   const patch = typeof change === 'function' ? change(n) : change;
   const circle = await db.circles.get(n.circleId);
   await db.needs.update(id, { ...patch, dirty: !!circle?.syncId });
-  if (circle?.syncId) void pushNeed(id).catch(() => setStatus(navigator.onLine ? 'error' : 'offline'));
+  if (circle?.syncId) void pushNeed(id).catch((e: Error) => setStatus(navigator.onLine ? 'error' : 'offline', e.message));
 }
 
 export async function needCreated(id: number) {
@@ -207,7 +207,7 @@ export async function needCreated(id: number) {
   const circle = n && (await db.circles.get(n.circleId));
   if (!circle?.syncId) return;
   await db.needs.update(id, { dirty: true });
-  void pushNeed(id).catch(() => setStatus(navigator.onLine ? 'error' : 'offline'));
+  void pushNeed(id).catch((e: Error) => setStatus(navigator.onLine ? 'error' : 'offline', e.message));
 }
 
 async function pushNeed(id: number) {
@@ -222,12 +222,22 @@ async function pushNeed(id: number) {
   await db.needs.update(id, { ...merged, dirty: false });
 }
 
-export async function checkInCreated(id: number) {
+/**
+ * Mark a new check-in for upload and try to send it now. Resolves to whether it
+ * arrived; if not, it stays queued (dirty) and is retried when the app reconnects.
+ */
+export async function checkInCreated(id: number): Promise<'sent' | 'queued' | 'local'> {
   const c = await db.checkins.get(id);
   const pact = c && (await db.pacts.get(c.pactId));
-  if (!c || !pact?.syncId) return;
+  if (!c || !pact?.syncId) return 'local';
   await db.checkins.update(id, { dirty: true });
-  void pushCheckIn(id).catch(() => setStatus(navigator.onLine ? 'error' : 'offline'));
+  try {
+    await pushCheckIn(id);
+    return 'sent';
+  } catch (e) {
+    setStatus(navigator.onLine ? 'error' : 'offline', (e as Error).message);
+    return 'queued';
+  }
 }
 
 /** Only the answers marked "shared" are uploaded. */
@@ -245,9 +255,19 @@ async function pushCheckIn(id: number) {
   await db.checkins.update(id, { dirty: false });
 }
 
+/** Upload everything waiting. One failure doesn't block the rest; the first error is rethrown at the end. */
 async function pushDirty() {
-  for (const n of await db.needs.filter((x) => !!x.dirty).toArray()) await pushNeed(n.id!);
-  for (const c of await db.checkins.filter((x) => !!x.dirty).toArray()) await pushCheckIn(c.id!);
+  let failure: unknown;
+  const attempt = async (push: () => Promise<void>) => {
+    try {
+      await push();
+    } catch (e) {
+      failure ??= e;
+    }
+  };
+  for (const n of await db.needs.filter((x) => !!x.dirty).toArray()) await attempt(() => pushNeed(n.id!));
+  for (const c of await db.checkins.filter((x) => !!x.dirty).toArray()) await attempt(() => pushCheckIn(c.id!));
+  if (failure) throw failure;
 }
 
 /* ─── Reading ─── */
